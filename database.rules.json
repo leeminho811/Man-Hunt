@@ -1,0 +1,31 @@
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        ".read": "auth != null && $room.matches(/^[A-Z0-9]{4,12}$/)",
+        "table": {
+          ".write": "auth != null && $room.matches(/^[A-Z0-9]{4,12}$/)",
+          ".validate": "newData.hasChildren(['j']) && newData.child('j').isString() && newData.child('j').val().length < 300000"
+        },
+        "req": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && $room.matches(/^[A-Z0-9]{4,12}$/)",
+            ".validate": "newData.hasChildren(['j']) && newData.child('j').isString() && newData.child('j').val().length < 8000"
+          }
+        },
+        "presence": {
+          "$tab": {
+            ".write": "auth != null && $room.matches(/^[A-Z0-9]{4,12}$/) && (!data.exists() || data.child('by').val() === auth.uid) && (!newData.exists() || newData.child('by').val() === auth.uid)",
+            ".validate": "newData.child('p').isString() && newData.child('p').val().length < 1000"
+          }
+        },
+        "events": {
+          "$id": {
+            ".write": "auth != null && $room.matches(/^[A-Z0-9]{4,12}$/) && (!data.exists() || data.child('by').val() === auth.uid) && (!newData.exists() || newData.child('by').val() === auth.uid)",
+            ".validate": "newData.child('j').isString() && newData.child('j').val().length < 1000"
+          }
+        }
+      }
+    }
+  }
+}

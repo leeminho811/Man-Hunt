@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Man Hunt — 진짜 밖에서 하는 술래잡기</title>
+<meta name="description" content="친구들과 휴대폰 GPS로 하는 진짜 술래잡기. 줄어드는 자기장, 위치 공개, 클래식·좀비·경찰과 도둑 모드.">
+<meta property="og:title" content="Man Hunt">
+<meta property="og:description" content="친구들과 휴대폰 GPS로 하는 진짜 술래잡기. 링크 하나로 바로 참여.">
+<meta name="theme-color" content="#050807">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Man Hunt">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23050807'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%232ef59a' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23ff4d5e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 첫 화면 -->
+<section id="home" class="screen" hidden>
+  <div class="glow" aria-hidden="true"></div>
+  <div class="logo" aria-hidden="true"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" /><circle cx="32" cy="32" r="12" /><path d="M32 2v14M32 48v14M2 32h14M48 32h14" /><circle class="dot" cx="32" cy="32" r="4" /></svg></div>
+  <h1 class="title">MAN <span>HUNT</span></h1>
+  <p class="tagline">진짜 밖에서 뛰는 술래잡기 · 친구들이 GPS로 쫓아와요 👀</p>
+  <div class="card">
+    <label class="lbl" for="nameIn">닉네임</label>
+    <input id="nameIn" maxlength="12" placeholder="친구들이 알아볼 이름" autocomplete="nickname">
+    <button class="btn neon" id="createBtn">방 만들기</button>
+    <div class="or"><span>또는 코드로 참여</span></div>
+    <div class="row">
+      <input id="codeIn" class="code" maxlength="6" placeholder="H4NT9Z" autocapitalize="characters" autocomplete="off" aria-label="참여 코드">
+      <button class="btn" id="joinBtn">참여</button>
+    </div>
+  </div>
+  <ol class="how">
+    <li><b>방을 만들고</b> 링크를 친구들에게 보내요</li>
+    <li><b>모드와 자기장</b>을 정하고 시작!</li>
+    <li>숨는 사람은 <b>숨는 시간</b> 동안 흩어져요</li>
+    <li>술래는 정해진 간격마다 <b>숨은 사람 위치</b>를 받아요. 가까이 가서 <b>잡기</b>!</li>
+  </ol>
+  <p class="foot">위치 권한이 필요해요 · 게임 중에는 화면을 켜 두세요</p>
+</section>
+
+<!-- 코드로 들어왔지만 아직 참가 전 -->
+<section id="join" class="screen" hidden>
+  <div class="glow" aria-hidden="true"></div>
+  <p class="eyebrow">참여 코드</p>
+  <div class="bigcode" id="joinCode"></div>
+  <p class="sub" id="joinInfo"></p>
+  <div class="card">
+    <label class="lbl" for="joinName">닉네임</label>
+    <input id="joinName" maxlength="12" placeholder="친구들이 알아볼 이름" autocomplete="nickname">
+    <button class="btn neon" id="joinGo">참여하기</button>
+    <button class="btn ghost" id="joinHome">처음으로</button>
+  </div>
+</section>
+
+<!-- 로비 -->
+<section id="lobby" class="screen scroll" hidden>
+  <header class="bar"><button class="icon" id="lobbyLeave" aria-label="방 나가기">‹</button><h2>로비</h2><span class="gps" id="lobbyGps"></span></header>
+  <div class="card codecard">
+    <p class="eyebrow">JOIN CODE</p>
+    <button class="bigcode" id="lobbyCode" aria-label="초대 링크 복사"></button>
+    <div class="row"><button class="btn" id="copyBtn">링크 복사</button><button class="btn" id="shareBtn">공유하기</button></div>
+  </div>
+  <div class="card">
+    <div class="cardhead"><h3>참가자 <span id="pCount"></span></h3><small id="hostNote"></small></div>
+    <ul class="players" id="players"></ul>
+    <button class="btn ghost small" id="takeHost" hidden>방장이 자리에 없어요 · 내가 방장 하기</button>
+  </div>
+  <details class="card settings" id="settingsBox" open>
+    <summary><span>☰</span> 게임 설정 <small id="setNote"></small></summary>
+    <p class="eyebrow">GAME MODE</p>
+    <div class="modes" id="modes"></div>
+    <div class="sliders" id="sliders"></div>
+    <p class="eyebrow">자기장 중심</p>
+    <div class="mini" id="miniMap"></div>
+    <p class="hint" id="centerNote"></p>
+  </details>
+  <div class="dockpad"></div>
+  <div class="dock"><button class="btn neon big" id="startBtn">게임 시작</button></div>
+</section>
+
+<!-- 게임 -->
+<section id="game" class="screen" hidden>
+  <div id="map"></div>
+  <div class="zonewarn" id="zoneWarn" hidden>⚠ 자기장 밖이에요! 내 위치가 모두에게 보여요</div>
+  <button class="icon float tl" id="menuBtn" aria-label="메뉴">☰</button>
+  <div class="hud" id="hud">
+    <p class="eyebrow" id="hudLabel">ACTIVE GAME</p>
+    <div class="timer"><span class="clock">◷</span><b id="hudTime">0:00</b></div>
+    <div class="hudline"><span id="hudZone"></span><span id="hudShrink" class="purple"></span></div>
+    <div class="hudline neon" id="hudReveal"></div>
+  </div>
+  <div class="rolechip" id="roleChip"></div>
+  <button class="pillbtn" id="listBtn"></button>
+  <button class="icon float br" id="meBtn" aria-label="내 위치로">◎</button>
+  <div class="bottom" id="bottom"></div>
+  <div class="panel" id="panel" hidden><div class="panelhead"><h3 id="panelTitle"></h3><button class="icon" id="panelClose" aria-label="닫기">✕</button></div><div id="panelBody"></div></div>
+  <div class="hidewall" id="hideWall" hidden><p class="eyebrow">HIDING TIME</p><b id="hideTime">0:00</b><p id="hideMsg"></p></div>
+</section>
+
+<!-- 결과 -->
+<section id="result" class="screen scroll" hidden>
+  <div class="resicon" id="resIcon">🎯</div>
+  <h2 class="restitle" id="resTitle"></h2>
+  <p class="sub">게임 끝</p>
+  <div class="card">
+    <p class="eyebrow">MATCH SUMMARY</p>
+    <div class="kv"><span>게임 시간</span><b class="neon" id="resDur"></b></div>
+    <div class="kv"><span id="resCaughtLbl">잡힌 사람</span><b id="resCaught"></b></div>
+  </div>
+  <p class="eyebrow pad">GAME STATISTICS</p>
+  <div class="card team"><h3><i class="dot red"></i><span id="resSLbl"></span></h3><div id="resS"></div></div>
+  <div class="card team"><h3><i class="dot green"></i><span id="resHLbl"></span></h3><div id="resH"></div></div>
+  <div class="dockpad"></div>
+  <div class="dock"><button class="btn neon big" id="againBtn">다시 하기</button></div>
+</section>
+
+<div class="backdrop" id="sheetBack" hidden><div class="sheet" id="sheet" role="dialog" aria-label="메뉴"></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+<div class="boot" id="boot">연결하는 중…</div>
+
+<!-- Firebase 설정값 (HO’s Casino 와 같은 프로젝트) -->
+<script src="firebase-config.js"></script>
+<script src="vendor/leaflet.js"></script>
+<script src="logic.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
