@@ -96,9 +96,9 @@ try {
   // the first reveal arrives after 5 s of play
   ok(await until(() => B.page.evaluate(() => document.querySelectorAll('.pin.ping').length === 2), 9000), 'seeker sees both hiders after the reveal');
   ok(await A.page.locator('#bottom .info b').innerText().then(s => /m$/.test(s)), 'hider sees how far the nearest seeker is');
-  ok(await B.page.evaluate(() => [...document.querySelectorAll('#map .leaflet-tile')].some(t => /tile\.openstreetmap\.org/.test(t.src))), 'street map falls back to OpenStreetMap when the first map server fails');
+  ok(await B.page.evaluate(() => [...document.querySelectorAll('#map .leaflet-tile')].some(t => /World_Street_Map/.test(t.src))), 'street map falls back to the Esri street map when OpenStreetMap fails');
   await B.page.locator('#styleBtn').click();
-  ok(await until(() => B.page.evaluate(() => [...document.querySelectorAll('#map .leaflet-tile')].some(t => /arcgisonline/.test(t.src)))), '🛰 switches to satellite tiles');
+  ok(await until(() => B.page.evaluate(() => [...document.querySelectorAll('#map .leaflet-tile')].some(t => /World_Imagery/.test(t.src)))), '🛰 switches to satellite tiles');
   await B.page.locator('#styleBtn').click();
   await B.page.locator('#listBtn').click();
   ok(await B.page.locator('.tgt .catchb').first().isDisabled(), 'CATCH is off when far away');

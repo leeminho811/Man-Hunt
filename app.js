@@ -309,10 +309,10 @@
 
   /* game map */
   let map = null, layers = null, markers = {}, fitRound = -1;
-  // real map tiles: street map (CARTO, built on OpenStreetMap; falls back to OpenStreetMap's own servers) or satellite (Esri)
+  // real map tiles, all without an API key: street map (OpenStreetMap; falls back to Esri's street map) or satellite (Esri)
   const STYLES = {
-    map: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', o: { maxZoom: 20, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO' } },
-    osm: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', o: { maxZoom: 20, maxNativeZoom: 19, attribution: '&copy; OpenStreetMap' } },
+    map: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', o: { maxZoom: 20, maxNativeZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' } },
+    osm: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', o: { maxZoom: 20, maxNativeZoom: 19, attribution: 'Map &copy; Esri, OpenStreetMap' } },
     sat: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', o: { maxZoom: 20, maxNativeZoom: 19, attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics' } },
   };
   let mapStyle = LS.get('mh_style') === 'sat' ? 'sat' : 'map', cartoBad = false;

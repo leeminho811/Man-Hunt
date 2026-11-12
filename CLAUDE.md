@@ -5,7 +5,7 @@ https://leeminho811.github.io/Man-Hunt/ . 사용자용 안내는 README.md. 사�
 
 ## 구조
 - `logic.js` 순수 규칙 (Node 테스트에서도 로드): 방 상태, 모드(classic/zombie/cops), 자기장 `zone()`, 위치 공개 `revealK()`, 잡기/구출/승패, `summary()`.
-- `app.js` Firebase(익명 인증 + Realtime Database) 동기화, GPS(watchPosition), Leaflet 지도(CARTO voyager 타일 → 실패하면 OpenStreetMap 타일, 🛰 버튼 = Esri 위성. 선택은 localStorage `mh_style`), 화면.
+- `app.js` Firebase(익명 인증 + Realtime Database) 동기화, GPS(watchPosition), Leaflet 지도(OpenStreetMap 타일 → 실패하면 Esri 거리 지도 (CARTO 는 API 키가 필요해져서 안 씀), 🛰 버튼 = Esri 위성. 선택은 localStorage `mh_style`), 화면.
 - 역할: `S` = 술래 편(술래/좀비/경찰), `H` = 숨는 편(숨는 사람/생존자/도둑). `orig` 은 시작할 때 역할(좀비 결과 표시용).
 
 ## 동기화
