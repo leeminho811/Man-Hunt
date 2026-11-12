@@ -280,7 +280,7 @@
     // zone preview
     if (!mini) {
       mini = LF.map('miniMap', { zoomControl: false, attributionControl: false });
-      tiles().addTo(mini);
+      tiles(mini);
       mini.on('click', e => { if (amHost()) act('setCenter', uid, { lat: e.latlng.lat, lng: e.latlng.lng }); else toast('방장만 중심을 정할 수 있어요'); });
       $('#settingsBox').addEventListener('toggle', () => setTimeout(() => mini.invalidateSize(), 30));
     }
@@ -309,13 +309,37 @@
 
   /* game map */
   let map = null, layers = null, markers = {}, fitRound = -1;
-  const tiles = () => LF.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    { maxZoom: 20, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO' });
+  // real map tiles: street map (CARTO, built on OpenStreetMap; falls back to OpenStreetMap's own servers) or satellite (Esri)
+  const STYLES = {
+    map: { url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', o: { maxZoom: 20, subdomains: 'abcd', attribution: '&copy; OpenStreetMap &copy; CARTO' } },
+    osm: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', o: { maxZoom: 20, maxNativeZoom: 19, attribution: '&copy; OpenStreetMap' } },
+    sat: { url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', o: { maxZoom: 20, maxNativeZoom: 19, attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics' } },
+  };
+  let mapStyle = LS.get('mh_style') === 'sat' ? 'sat' : 'map', cartoBad = false;
+  const baseMaps = [];
+  function setBase(m) {
+    const key = mapStyle === 'sat' ? 'sat' : cartoBad ? 'osm' : 'map', sdef = STYLES[key];
+    if (m._base && m._base._key === key) return;
+    if (m._base) m.removeLayer(m._base);
+    const t = LF.tileLayer(sdef.url, sdef.o); t._key = key;
+    let errs = 0, oks = 0;
+    t.on('tileload', () => { oks++; });
+    t.on('tileerror', () => { if (key === 'map' && ++errs >= 6 && !oks && !cartoBad) { cartoBad = true; baseMaps.forEach(setBase); } });
+    m._base = t.addTo(m); t.bringToBack();
+  }
+  function tiles(m) { baseMaps.push(m); setBase(m); }
+  function toggleStyle() {
+    mapStyle = mapStyle === 'sat' ? 'map' : 'sat'; LS.set('mh_style', mapStyle);
+    baseMaps.forEach(setBase); styleBtn();
+    toast(mapStyle === 'sat' ? '🛰 위성 지도' : '🗺 일반 지도');
+  }
+  function styleBtn() { const b = $('#styleBtn'); if (!b) return; b.textContent = mapStyle === 'sat' ? '🗺' : '🛰'; b.setAttribute('aria-label', mapStyle === 'sat' ? '일반 지도로 보기' : '위성 지도로 보기'); }
   function gameMap() {
     if (map) return map;
     map = LF.map('map', { zoomControl: false, attributionControl: true });
-    tiles().addTo(map);
     map.setView(me ? [me.lat, me.lng] : [21.0285, 105.8542], 16);
+    tiles(map);
+    $('#styleBtn').onclick = toggleStyle; styleBtn();
     layers = { shade: LF.polygon([], { stroke: false, fillColor: '#ff4d5e', fillOpacity: 0.2, interactive: false }).addTo(map),
       zone: LF.circle([0, 0], { radius: 1, color: '#2ef59a', weight: 3, fill: false, interactive: false }).addTo(map),
       next: LF.circle([0, 0], { radius: 1, color: '#ffffff', weight: 2, dashArray: '8 8', fill: false, interactive: false }).addTo(map),

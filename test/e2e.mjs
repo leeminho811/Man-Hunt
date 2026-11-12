@@ -45,7 +45,7 @@ async function phone(browser, label, geo) {
     const u = new URL(r.request().url()), f = path.join(SDK_DIR, path.basename(u.pathname));
     return u.pathname.includes(`/${VERSION}/`) && fs.existsSync(f) ? r.fulfill({ path: f, contentType: 'application/javascript' }) : r.abort();
   });
-  await ctx.route(/fonts\.(googleapis|gstatic)\.com|basemaps\.cartocdn\.com/, r => r.abort());
+  await ctx.route(/fonts\.(googleapis|gstatic)\.com|basemaps\.cartocdn\.com|tile\.openstreetmap\.org|arcgisonline\.com/, r => r.abort());
   await ctx.route('**/firebase-config.js', r => r.fulfill({ contentType: 'application/javascript', body: TEST_CONFIG }));
   const page = await ctx.newPage();
   page.setDefaultTimeout(6000);
@@ -96,6 +96,10 @@ try {
   // the first reveal arrives after 5 s of play
   ok(await until(() => B.page.evaluate(() => document.querySelectorAll('.pin.ping').length === 2), 9000), 'seeker sees both hiders after the reveal');
   ok(await A.page.locator('#bottom .info b').innerText().then(s => /m$/.test(s)), 'hider sees how far the nearest seeker is');
+  ok(await B.page.evaluate(() => [...document.querySelectorAll('#map .leaflet-tile')].some(t => /tile\.openstreetmap\.org/.test(t.src))), 'street map falls back to OpenStreetMap when the first map server fails');
+  await B.page.locator('#styleBtn').click();
+  ok(await until(() => B.page.evaluate(() => [...document.querySelectorAll('#map .leaflet-tile')].some(t => /arcgisonline/.test(t.src)))), '🛰 switches to satellite tiles');
+  await B.page.locator('#styleBtn').click();
   await B.page.locator('#listBtn').click();
   ok(await B.page.locator('.tgt .catchb').first().isDisabled(), 'CATCH is off when far away');
   await sleep(300); await shot(B, '06-seeker-panel');

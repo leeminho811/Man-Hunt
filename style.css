@@ -117,7 +117,8 @@ input[type=range]:disabled { opacity: 0.6; }
 #map { position: absolute; inset: 0; background: #e8ece6; }
 .float { position: absolute; z-index: 500; }
 .float.tl { left: 12px; top: calc(12px + env(safe-area-inset-top)); }
-.float.br { right: 14px; bottom: calc(150px + env(safe-area-inset-bottom)); width: 48px; height: 48px; border-radius: 50%; color: var(--neon); }
+.float.br, .float.br2 { right: 14px; bottom: calc(150px + env(safe-area-inset-bottom)); width: 48px; height: 48px; border-radius: 50%; color: var(--neon); }
+.float.br2 { bottom: calc(206px + env(safe-area-inset-bottom)); font-size: 21px; }
 .hud { position: absolute; z-index: 500; left: 50%; top: calc(10px + env(safe-area-inset-top)); transform: translateX(-50%); min-width: 190px; padding: 10px 16px 9px; border-radius: 18px; background: rgba(8, 12, 11, 0.94); border: 1px solid var(--line-2); text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
 .hud .eyebrow { color: var(--neon); font-size: 10.5px; }
 .timer { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 2px 0; }
